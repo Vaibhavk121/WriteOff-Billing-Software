@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Vendors {
+  id                 String     @id @default(auto()) @map("_id") @db.ObjectId
+  name               String     @unique
+  currentOutStanding Float      @default(0)
+  createdAt          DateTime   @default(now())
+  WriteOffs          WriteOff[]
+}
+
+model Admin {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userName  String     @unique
+  password  String
+  branch    String
+  WriteOffs WriteOff[]
+}
+
+model Branches {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  name      String     @unique
+  location  String
+  WriteOffs WriteOff[]
+}
+
+model WriteOff {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  fmNumber  String
+  date      DateTime   @default(now())
+  note      String?
+  amount    Float
+
+  // relations
+  vendorId  String     @db.ObjectId
+  vendor    Vendors    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  adminId   String?    @db.ObjectId
+  admin     Admin?     @relation(fields: [adminId], references: [id])
+
+  branchId  String?    @db.ObjectId
+  branch    Branches?  @relation(fields: [branchId], references: [id])
+
+  createdAt DateTime   @default(now())
+}
