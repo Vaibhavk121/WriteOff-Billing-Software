@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import axios from "axios";
 
-const API = "http://localhost:3000"; 
+const API = "http://localhost:3000";
 
 
 interface Vendor {
@@ -46,7 +46,7 @@ function App() {
         setIsLoading(false);
       }
     };
-    
+
     fetchVendors();
   }, []);
 
@@ -66,7 +66,7 @@ function App() {
           setIsLoading(false);
         }
       };
-      
+
       fetchWriteoffs();
     }
   }, [selectedVendor]);
@@ -78,6 +78,16 @@ function App() {
       return;
     }
 
+    // Vendors Outstanding amount
+    const selectedVendorData = vendors.find(v => v.id === selectedVendor);
+    const outstandingBalance = selectedVendorData?.currentOutStanding || 0;
+
+    // Validation of it 
+    if (Number(amount) > outstandingBalance) {
+      setError(`Write-off amount cannot exceed the outstanding balance of ₹${outstandingBalance.toLocaleString()}`);
+      return;
+    }
+
     try {
       setIsLoading(true);
       await axios.post(`${API}/writeoffs`, {
@@ -86,17 +96,17 @@ function App() {
         amount: Number(amount),
         note,
       });
-  
+
       setAmount("");
       setFmNumber("");
       setNote("");
       setError("");
-      
+
       const res = await axios.get<WriteOff[]>(
         `${API}/vendors/${selectedVendor}/writeoffs`
       );
       setWriteoffs(res.data);
-      
+
       const vendorName = vendors.find(v => v.id === selectedVendor)?.name;
       alert(`Write-off successfully created for ${vendorName}!`);
     } catch (err) {
@@ -112,9 +122,8 @@ function App() {
       <div className="max-w-4xl mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-            <span className="text-blue-600">📉</span> Write-Off Manager
+            Write-Off
           </h1>
-          <p className="text-gray-600 mt-2">Manage vendor write-offs efficiently</p>
         </header>
 
         {error && (
@@ -158,7 +167,7 @@ function App() {
                 disabled={isLoading}
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
               <input
@@ -170,7 +179,7 @@ function App() {
                 disabled={isLoading}
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Note</label>
               <textarea
@@ -182,7 +191,7 @@ function App() {
                 disabled={isLoading}
               />
             </div>
-            
+
             <button
               type="submit"
               className="bg-blue-600 text-white rounded-md py-2.5 px-4 font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -199,7 +208,7 @@ function App() {
               Write-Off History
               {writeoffs.length > 0 && <span className="text-sm font-normal text-gray-500 ml-2">({writeoffs.length} entries)</span>}
             </h2>
-            
+
             {isLoading ? (
               <div className="py-4 text-center text-gray-500">Loading write-offs...</div>
             ) : writeoffs.length === 0 ? (
