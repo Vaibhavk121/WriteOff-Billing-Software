@@ -11,6 +11,7 @@ model Vendors {
   id                 String     @id @default(auto()) @map("_id") @db.ObjectId
   name               String     @unique
   currentOutStanding Float      @default(0)
+  status             String?
   createdAt          DateTime   @default(now())
   WriteOffs          WriteOff[]
 }
