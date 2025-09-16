@@ -1,11 +1,9 @@
-// src/index.js
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
 
-// Add error handling for Prisma connection
 let prisma;
 try {
   prisma = new PrismaClient();
@@ -33,7 +31,6 @@ app.post('/writeoffs', async (req, res) => {
     const amt = Number(amount);
     if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
 
-    // decide on policy: ensure write-off doesn't make outstanding negative
     const safeAmount = Math.min(amt, vendor.currentOutStanding);
 
     const writeOff = await prisma.writeOff.create({
@@ -60,7 +57,6 @@ app.post('/writeoffs', async (req, res) => {
   }
 });
 
-// List write-offs for a vendor
 app.get('/vendors/:id/writeoffs', async (req, res) => {
   const vendorId = req.params.id;
   const list = await prisma.writeOff.findMany({
@@ -70,7 +66,6 @@ app.get('/vendors/:id/writeoffs', async (req, res) => {
   res.json(list);
 });
 
-// List all vendors (quick check)
 app.get('/vendors', async (req, res) => {
   const vendors = await prisma.vendors.findMany();
   res.json(vendors);
